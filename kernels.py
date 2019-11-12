@@ -171,18 +171,19 @@ def bvp(n, k, domain, alpha, qbx_exp_slp, qbx_exp_dlp, rhs, **kwargs):
                             -normal_mat_x.T, -normal_mat_y.T, normal_mat_x,
                             normal_mat_y,
                             radius_mat) * domain.curve_weights.reshape(-1)
-    D_qbx_ext = qbx_exp_dlp(node_mat_x.T, node_mat_y.T, node_mat_x, node_mat_y,
-                            normal_mat_x.T, normal_mat_y.T, normal_mat_x,
-                            normal_mat_y,
-                            radius_mat) * domain.curve_weights.reshape(-1)
+    # D_qbx_ext = qbx_exp_dlp(node_mat_x.T, node_mat_y.T, node_mat_x,
+    #                         node_mat_y, normal_mat_x.T, normal_mat_y.T,
+    #                         normal_mat_x, normal_mat_y,
+    #                         radius_mat) * domain.curve_weights.reshape(-1)
     S_qbx = qbx_exp_slp(node_mat_x.T, node_mat_y.T, node_mat_x, node_mat_y,
                         normal_mat_x.T, normal_mat_y.T, normal_mat_x,
                         normal_mat_y,
                         radius_mat) * domain.curve_weights.reshape(-1)
-    # averaging interior exterior limits
     rhs = rhs.reshape(-1)
-    A = (D_qbx_int + D_qbx_ext) * 0.5 + 0.5 * np.identity(total_points)
-    # A = D_qbx_ext
+    # averaging interior exterior limits
+    # A = (D_qbx_int + D_qbx_ext) * 0.5 + 0.5 * np.identity(total_points)
+    # or compute one side use jump relations: less work and faster
+    A = D_qbx_int + np.identity(total_points)
     A -= alpha * S_qbx * 1j
     # adding images and sommerfeld contribution
     if ("som_sp" in kwargs.keys()) and ("som_dp" in kwargs.keys()):
